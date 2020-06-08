@@ -7,13 +7,13 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node server.js",
     "build": "next build",
-    "start": "NODE_ENV=production node server.js"
+    "start": "NODE_ENV=production node server.js",
+    "export": "next export"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@shopify/app-bridge-react": "^1.22.0",
     "@shopify/koa-shopify-auth": "^3.1.63",
     "@shopify/koa-shopify-graphql-proxy": "^4.0.0",
     "@shopify/polaris": "^4.24.0",
