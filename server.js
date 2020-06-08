@@ -22,7 +22,7 @@ app.prepare().then(() => {
   debugger
 
   const server = new Koa();
-  server.use(session({ secure: true, sameSite: 'none' }, server));
+  server.use(session(server));
   server.keys = [SHOPIFY_API_SECRET_KEY];
   console.log("Tes1t");
 
@@ -42,7 +42,6 @@ app.prepare().then(() => {
     }),
   ).use(verifyRequest());
 
-  server.use(graphQLProxy({version: ApiVersion.October19}))
   server.use(async (ctx) => {
     await handle(ctx.req, ctx.res);
     ctx.respond = false;
