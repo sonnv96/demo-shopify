@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 const Koa = require('koa');
 const next = require('next');
 const { default: createShopifyAuth } = require('@shopify/koa-shopify-auth');
-const { verifyRequest } = require('@shopify/koa-shopify-auth');
+const shopifyAuth, { verifyRequest } = require('@shopify/koa-shopify-auth');
 const session = require('koa-session');
 
 dotenv.config();
@@ -27,7 +27,7 @@ app.prepare().then(() => {
   console.log("Tes1t");
 
   server.use(
-    createShopifyAuth({
+    shopifyAuth({
       apiKey: SHOPIFY_API_KEY,
       secret: SHOPIFY_API_SECRET_KEY,
       scopes: ['read_products'],
