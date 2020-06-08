@@ -26,22 +26,23 @@ app.prepare().then(() => {
   server.keys = [SHOPIFY_API_SECRET_KEY];
   console.log("Tes1t");
 
+  //Auth for app
   server.use(
-    shopifyAuth({
+    createShopifyAuth({
       apiKey: SHOPIFY_API_KEY,
       secret: SHOPIFY_API_SECRET_KEY,
-      scopes: ['read_products'],
+      scopes: ['read_themes', 'write_themes'],
       afterAuth(ctx) {
-        debugger
-        console.log("Test")
-
         const { shop, accessToken } = ctx.session;
+          ctx.cookies.set('shopOrigin', shop, { httpOnly: false });
+          ctx.cookies.set('accessToken', accessToken );
+          console.log(shop)
         ctx.redirect('/');
       },
     }),
-  );
+  ).use(verifyRequest());
+
   server.use(graphQLProxy({version: ApiVersion.October19}))
-  server.use(verifyRequest());
   server.use(async (ctx) => {
     await handle(ctx.req, ctx.res);
     ctx.respond = false;
