@@ -1,56 +1,66 @@
-require('isomorphic-fetch');
-const dotenv = require('dotenv');
-const Koa = require('koa');
-const next = require('next');
-const { default: createShopifyAuth } = require('@shopify/koa-shopify-auth');
-const { verifyRequest } = require('@shopify/koa-shopify-auth');
-const session = require('koa-session');
-
+import "@babel/polyfill";
+import dotenv from "dotenv";
+import "isomorphic-fetch";
+import createShopifyAuth, { verifyRequest } from "@shopify/koa-shopify-auth";
+import graphQLProxy, { ApiVersion } from "@shopify/koa-shopify-graphql-proxy";
+import Koa from "koa";
+import next from "next";
+import Router from "koa-router";
+import session from "koa-session";
+import * as handlers from "./handlers/index";
 dotenv.config();
-const { default: graphQLProxy } = require('@shopify/koa-shopify-graphql-proxy');
-
-const { ApiVersion } = require('@shopify/koa-shopify-graphql-proxy');
-
-const port = parseInt(process.env.PORT, 10) || 3000;
-const dev = process.env.NODE_ENV === 'production';
-const app = next({  dev});
+const port = parseInt(process.env.PORT, 10) || 8081;
+const dev = process.env.NODE_ENV !== "production";
+const app = next({
+  dev
+});
 const handle = app.getRequestHandler();
-
-const { SHOPIFY_API_SECRET_KEY, SHOPIFY_API_KEY } = process.env;
-
+const { SHOPIFY_API_SECRET, SHOPIFY_API_KEY, SCOPES } = process.env;
 app.prepare().then(() => {
-  debugger
-
   const server = new Koa();
-  server.use(session({ secure: true, sameSite: 'none' }, server));
-  server.keys = [SHOPIFY_API_SECRET_KEY];
-  console.log("Tes1t");
-
+  const router = new Router();
+  server.use(
+    session(
+      {
+        sameSite: "none",
+        secure: true
+      },
+      server
+    )
+  );
+  server.keys = [SHOPIFY_API_SECRET];
   server.use(
     createShopifyAuth({
       apiKey: SHOPIFY_API_KEY,
-      secret: SHOPIFY_API_SECRET_KEY,
-      scopes: ['read_products'],
-      afterAuth(ctx) {
-        debugger
-        console.log("Test")
+      secret: SHOPIFY_API_SECRET,
+      scopes: [SCOPES],
 
+      async afterAuth(ctx) {
+        //Auth token and shop available in session
+        //Redirect to shop upon auth
         const { shop, accessToken } = ctx.session;
-        ctx.redirect('/');
-      },
-    }),
+        ctx.cookies.set("shopOrigin", shop, {
+          httpOnly: false,
+          secure: true,
+          sameSite: "none"
+        });
+        ctx.redirect("/");
+      }
+    })
   );
-  server.use(graphQLProxy({version: ApiVersion.October19}))
-  server.use(verifyRequest());
-  server.use(async (ctx) => {
+  server.use(
+    graphQLProxy({
+      version: ApiVersion.October19
+    })
+  );
+  router.get("*", verifyRequest(), async ctx => {
     await handle(ctx.req, ctx.res);
     ctx.respond = false;
     ctx.res.statusCode = 200;
-    return
   });
-
+  server.use(router.allowedMethods());
+  server.use(router.routes());
   server.listen(port, () => {
     console.log(`> Ready on http://localhost:${port}`);
   });
-
 });
