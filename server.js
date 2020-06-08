@@ -19,7 +19,11 @@ const handle = app.getRequestHandler();
 const { SHOPIFY_API_SECRET_KEY, SHOPIFY_API_KEY } = process.env;
 
 app.prepare().then(() => {
-  debugger
+  
+
+});
+
+debugger
 
   const server = new Koa();
   server.use(session(server));
@@ -52,5 +56,3 @@ app.prepare().then(() => {
   server.listen(port, () => {
     console.log(`> Ready on http://localhost:${port}`);
   });
-
-});
