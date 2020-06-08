@@ -1,7 +1,7 @@
 import App from 'next/app';
 import Head from 'next/head';
 import { AppProvider } from '@shopify/polaris';
-import { Provider } from '@shopify/app-bridge-react';
+// import { Provider } from '@shopify/app-bridge-react';
 import '@shopify/polaris/styles.css';
 import Cookies from 'js-cookie';
 
@@ -15,11 +15,11 @@ class MyApp extends App {
           <title>Sample App</title>
           <meta charSet="utf-8" />
         </Head>
-        <Provider config={config}>
+        {/* <Provider config={config}> */}
           <AppProvider>
             <Component {...pageProps} />
           </AppProvider>
-        </Provider>
+        {/* </Provider> */}
       </React.Fragment>
     );
   }
