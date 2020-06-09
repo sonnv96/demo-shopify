@@ -5,6 +5,7 @@ const next = require('next');
 const { default: createShopifyAuth } = require('@shopify/koa-shopify-auth');
 const shopifyAuth, { verifyRequest } = require('@shopify/koa-shopify-auth');
 const session = require('koa-session');
+const ShopifyExpress = require('@shopify/shopify-express');
 
 dotenv.config();
 const { default: graphQLProxy } = require('@shopify/koa-shopify-graphql-proxy');
@@ -17,6 +18,18 @@ const app = next({  dev});
 const handle = app.getRequestHandler();
 
 const { SHOPIFY_API_SECRET_KEY, SHOPIFY_API_KEY } = process.env;
+
+// Install
+app.get('/install', (req, res) => res.render('install'));
+
+// Create shopify middlewares and router
+const shopify = ShopifyExpress(shopifyConfig);
+
+// Mount Shopify Routes
+const {routes, middleware} = shopify;
+const {withShop, withWebhook} = middleware;
+
+app.use('/shopify', routes);
 
 app.prepare().then(() => {
   
