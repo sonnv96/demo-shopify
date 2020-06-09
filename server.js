@@ -3,9 +3,8 @@ const dotenv = require('dotenv');
 const Koa = require('koa');
 const next = require('next');
 const { default: createShopifyAuth } = require('@shopify/koa-shopify-auth');
-const shopifyAuth, { verifyRequest } = require('@shopify/koa-shopify-auth');
+const shopifyAuth, { createVerifyRequest } = require('@shopify/koa-shopify-auth');
 const session = require('koa-session');
-const ShopifyExpress = require('@shopify/shopify-express');
 
 dotenv.config();
 const { default: graphQLProxy } = require('@shopify/koa-shopify-graphql-proxy');
@@ -19,24 +18,8 @@ const handle = app.getRequestHandler();
 
 const { SHOPIFY_API_SECRET_KEY, SHOPIFY_API_KEY } = process.env;
 
-// Install
-app.get('/install', (req, res) => res.render('install'));
-
-// Create shopify middlewares and router
-const shopify = ShopifyExpress(shopifyConfig);
-
-// Mount Shopify Routes
-const {routes, middleware} = shopify;
-const {withShop, withWebhook} = middleware;
-
-app.use('/shopify', routes);
-
 app.prepare().then(() => {
-  
-
-});
-
-debugger
+  debugger
 
   const server = new Koa();
   server.use(session(server));
@@ -57,7 +40,7 @@ debugger
         ctx.redirect('/');
       },
     }),
-  ).use(verifyRequest());
+  ).use(createVerifyRequest());
 
   server.use(async (ctx) => {
     await handle(ctx.req, ctx.res);
@@ -69,3 +52,5 @@ debugger
   server.listen(port, () => {
     console.log(`> Ready on http://localhost:${port}`);
   });
+
+});
