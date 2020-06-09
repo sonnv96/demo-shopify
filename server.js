@@ -14,46 +14,54 @@ const { ApiVersion } = require('@shopify/koa-shopify-graphql-proxy');
 
 const port = parseInt(process.env.PORT, 10) || 3000;
 const dev = process.env.NODE_ENV !== 'production';
-const app = next({  dev});
-const handle = app.getRequestHandler();
+// const app = next({  dev});
+// const handle = app.getRequestHandler();
 
 const { SHOPIFY_API_SECRET_KEY, SHOPIFY_API_KEY } = process.env;
 
-app.prepare().then(() => {
+// app.prepare().then(() => {
   debugger
 
   const server = new Koa();
-  server.use(session(server));
   server.keys = [SHOPIFY_API_SECRET_KEY];
   console.log("Tes1t");
 
   //Auth for app
-  server.use(
-    createShopifyAuth({
+  server
+  .use(session({secure: true, sameSite: 'none'}, server))
+
+  .use(
+    shopifyAuth({
       apiKey: SHOPIFY_API_KEY,
       secret: SHOPIFY_API_SECRET_KEY,
       scopes: ['read_themes', 'write_themes'],
       afterAuth(ctx) {
         const { shop, accessToken } = ctx.session;
-          ctx.cookies.set('shopOrigin', shop, { httpOnly: false });
-          ctx.cookies.set('accessToken', accessToken );
-          console.log(shop)
+        console.log('We did it!', accessToken);
+ 
         ctx.redirect('/');
       },
     }),
-  );
+  )
 
-
-  router.get('*', verifyRequest(), async (ctx) => {
-    await handle(ctx.req, ctx.res);
-    ctx.respond = false;
-    ctx.res.statusCode = 200;
-   });
-   server.use(router.allowedMethods());
-   server.use(router.routes());
-
-  server.listen(port, () => {
-    console.log(`> Ready on http://localhost:${port}`);
+  .use(verifyRequest())
+ 
+  // application code
+  .use(ctx => {
+    ctx.body = '🎉';
   });
 
-});
+
+  // router.get('*', verifyRequest(), async (ctx) => {
+  //   await handle(ctx.req, ctx.res);
+  //   ctx.respond = false;
+  //   ctx.res.statusCode = 200;
+  //  });
+  //  server.use(router.allowedMethods());
+  //  server.use(router.routes());
+
+  // server.listen(port, () => {
+  //   console.log(`> Ready on http://localhost:${port}`);
+  });
+
+// });
