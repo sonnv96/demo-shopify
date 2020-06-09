@@ -3,8 +3,9 @@ const dotenv = require('dotenv');
 const Koa = require('koa');
 const next = require('next');
 const { default: createShopifyAuth } = require('@shopify/koa-shopify-auth');
-const shopifyAuth, { createVerifyRequest } = require('@shopify/koa-shopify-auth');
+const shopifyAuth, { verifyRequest } = require('@shopify/koa-shopify-auth');
 const session = require('koa-session');
+const Router = require('koa-router');
 
 dotenv.config();
 const { default: graphQLProxy } = require('@shopify/koa-shopify-graphql-proxy');
@@ -40,14 +41,16 @@ app.prepare().then(() => {
         ctx.redirect('/');
       },
     }),
-  ).use(createVerifyRequest());
+  );
 
-  server.use(async (ctx) => {
+
+  router.get('*', verifyRequest(), async (ctx) => {
     await handle(ctx.req, ctx.res);
     ctx.respond = false;
     ctx.res.statusCode = 200;
-    return
-  });
+   });
+   server.use(router.allowedMethods());
+   server.use(router.routes());
 
   server.listen(port, () => {
     console.log(`> Ready on http://localhost:${port}`);
