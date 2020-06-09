@@ -42,9 +42,9 @@ const { SHOPIFY_API_SECRET_KEY, SHOPIFY_API_KEY } = process.env;
         ctx.redirect('/');
       },
     }),
-  )
+  );
 
-  .use(verifyRequest())
+  use(verifyRequest())
  
   // application code
   .use(ctx => {
@@ -62,6 +62,6 @@ const { SHOPIFY_API_SECRET_KEY, SHOPIFY_API_KEY } = process.env;
 
   // server.listen(port, () => {
   //   console.log(`> Ready on http://localhost:${port}`);
-  });
+  
 
 // });
